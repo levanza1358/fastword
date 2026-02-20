@@ -420,14 +420,8 @@ class AutoWordEngine:
             
             # Send Ctrl+V
             self._log("Sending Ctrl+V")
-            _send_vk(VK_CONTROL) # Ctrl down
-            _send_vk(ord('V'))   # V down/up
             
-            # Release Ctrl manually because _send_vk sends down+up
-            # But wait, _send_vk implementation sends DOWN then UP immediately.
-            # For Ctrl+V combination, we need: Ctrl Down -> V Down -> V Up -> Ctrl Up.
-            
-            # Let's fix _send_vk usage for combination or write a new helper
+            # Send Ctrl+V combination
             self._send_ctrl_v()
             
         except Exception as e:
