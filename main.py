@@ -1,8 +1,8 @@
-from autoword.gui import AutoWordGUI
+from fastword.gui import FastWordGUI
 
 
 def main():
-    app = AutoWordGUI()
+    app = FastWordGUI()
     app.run()
 
 

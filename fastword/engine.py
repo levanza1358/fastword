@@ -1,7 +1,8 @@
 import ctypes
-import threading
-import subprocess
 import os
+import subprocess
+import threading
+import time
 from ctypes import wintypes
 
 if not hasattr(wintypes, "ULONG_PTR"):
@@ -125,11 +126,28 @@ user32.GetAsyncKeyState.argtypes = [wintypes.INT]
 user32.GetAsyncKeyState.restype = wintypes.SHORT
 user32.SendInput.argtypes = [wintypes.UINT, ctypes.POINTER(INPUT), ctypes.c_int]
 user32.SendInput.restype = wintypes.UINT
+user32.GetForegroundWindow.argtypes = []
+user32.GetForegroundWindow.restype = wintypes.HWND
+user32.GetWindowThreadProcessId.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.DWORD)]
+user32.GetWindowThreadProcessId.restype = wintypes.DWORD
 
 kernel32.GetModuleHandleW.argtypes = [wintypes.LPCWSTR]
 kernel32.GetModuleHandleW.restype = wintypes.HMODULE
 kernel32.GetCurrentThreadId.argtypes = []
 kernel32.GetCurrentThreadId.restype = wintypes.DWORD
+kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+kernel32.OpenProcess.restype = wintypes.HANDLE
+kernel32.QueryFullProcessImageNameW.argtypes = [
+    wintypes.HANDLE,
+    wintypes.DWORD,
+    wintypes.LPWSTR,
+    ctypes.POINTER(wintypes.DWORD),
+]
+kernel32.QueryFullProcessImageNameW.restype = wintypes.BOOL
+kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+kernel32.CloseHandle.restype = wintypes.BOOL
+
+PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
 
 
 def _async_down(vk: int) -> bool:
@@ -196,12 +214,56 @@ def _send_text(text: str) -> None:
     user32.SendInput(len(inputs), inputs, ctypes.sizeof(INPUT))
 
 
-class AutoWordEngine:
+def _send_enter() -> None:
+    _send_vk(VK_RETURN)
+
+
+def _normalize_app_targets(rule: dict) -> list[str]:
+    raw = rule.get("app_targets", [])
+    if isinstance(raw, str):
+        raw = [part.strip() for part in raw.split(",")]
+    if not isinstance(raw, list):
+        return []
+    targets = []
+    for item in raw:
+        name = os.path.basename(str(item or "").strip()).lower()
+        if name and name not in targets:
+            targets.append(name)
+    return targets
+
+
+def _foreground_process_name() -> str:
+    hwnd = user32.GetForegroundWindow()
+    if not hwnd:
+        return ""
+
+    pid = wintypes.DWORD()
+    user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+    if not pid.value:
+        return ""
+
+    process = kernel32.OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, False, pid.value)
+    if not process:
+        return ""
+
+    try:
+        size = wintypes.DWORD(1024)
+        buffer = ctypes.create_unicode_buffer(size.value)
+        if kernel32.QueryFullProcessImageNameW(process, 0, buffer, ctypes.byref(size)):
+            return os.path.basename(buffer.value).lower()
+    finally:
+        kernel32.CloseHandle(process)
+    return ""
+
+
+class FastWordEngine:
     def __init__(self):
         self._rules = []
         self._enabled_map = {}
         self._triggers_sorted = []
         self._max_trigger_len = 0
+        self._auto_enter = True
+        self._global_delay_ms = 120
 
         self._buffer = ""
         self._buffer_max = 96
@@ -239,13 +301,17 @@ class AutoWordEngine:
                 trig = str(r.get("trigger", ""))
                 if not trig:
                     continue
-                # Store full rule object
-                enabled[trig] = r
+                enabled.setdefault(trig, []).append(r)
 
             self._enabled_map = enabled
             self._triggers_sorted = sorted(enabled.keys(), key=len, reverse=True)
             self._max_trigger_len = max((len(t) for t in self._triggers_sorted), default=0)
             self._buffer_max = max(96, self._max_trigger_len * 4)
+
+    def configure(self, *, auto_enter: bool, global_delay_ms: int) -> None:
+        with self._lock:
+            self._auto_enter = bool(auto_enter)
+            self._global_delay_ms = max(0, int(global_delay_ms))
 
     def start(self) -> None:
         if self.running:
@@ -253,7 +319,7 @@ class AutoWordEngine:
             return
         self._log("Starting engine...")
         self._running.set()
-        self._thread = threading.Thread(target=self._thread_main, name="AutoWordHook", daemon=True)
+        self._thread = threading.Thread(target=self._thread_main, name="FastWordHook", daemon=True)
         self._thread.start()
 
     def stop(self) -> None:
@@ -312,18 +378,22 @@ class AutoWordEngine:
                                 self._buffer = self._buffer[-self._buffer_max:]
                             
                             # Check for replacement
-                            rep = self._match_replacement()
+                            current_app = _foreground_process_name()
+                            rep = self._match_replacement(current_app)
                             if rep:
                                 rule = rep
                                 trig = rule["trigger"]
                                 replacement = rule["replacement"]
                                 image_path = rule.get("image_path", "")
+                                app_targets = _normalize_app_targets(rule)
                                 
                                 log_msg = f"Match: '{trig}'"
                                 if replacement:
                                     log_msg += f" -> '{replacement}'"
                                 if image_path:
                                     log_msg += f" + [Image]"
+                                if app_targets:
+                                    log_msg += f" @ {', '.join(app_targets)}"
                                 self._log(log_msg)
                                 
                                 self._buffer = ""
@@ -334,7 +404,11 @@ class AutoWordEngine:
                                     pass
                                 
                                 # Using a separate thread to inject to avoid blocking the hook
-                                threading.Thread(target=self._do_inject, args=(len(trig), replacement, image_path)).start()
+                                auto_enter = rule.get("auto_enter", self._auto_enter)
+                                threading.Thread(
+                                    target=self._do_inject,
+                                    args=(len(trig), replacement, image_path, bool(auto_enter)),
+                                ).start()
                                 # We return 1 to block the last character of the trigger from appearing
                                 return 1
                         else:
@@ -371,9 +445,12 @@ class AutoWordEngine:
             user32.UnhookWindowsHookEx(self._hook)
             self._hook = None
 
-    def _do_inject(self, backspace_count: int, text: str, image_path: str = ""):
+    def _do_inject(self, backspace_count: int, text: str, image_path: str = "", auto_enter: bool = True):
         try:
             self._injecting = True
+            sent_content = False
+            with self._lock:
+                global_delay_ms = self._global_delay_ms
             
             # Add a small delay to ensure the last key up event is processed
             # threading.Event().wait(0.01) 
@@ -386,19 +463,29 @@ class AutoWordEngine:
             if text:
                 # self._log(f"Sending text: {text}")
                 _send_text(text)
+                sent_content = True
             
             if image_path:
-                self._handle_image_paste(image_path)
+                sent_image = self._handle_image_paste(image_path)
+                sent_content = sent_content or sent_image
+
+            if sent_content and auto_enter:
+                # Give target apps a moment to process the injected payload before submit.
+                delay_seconds = max(global_delay_ms / 1000.0, 0.0)
+                if delay_seconds > 0:
+                    time.sleep(delay_seconds)
+                self._log("Sending Enter")
+                _send_enter()
 
         except Exception as e:
             self._log(f"Injection error: {e}")
         finally:
             self._injecting = False
 
-    def _handle_image_paste(self, image_path: str):
+    def _handle_image_paste(self, image_path: str) -> bool:
         if not os.path.exists(image_path):
             self._log(f"Image not found: {image_path}")
-            return
+            return False
             
         self._log(f"Copying image to clipboard: {image_path}")
         try:
@@ -423,9 +510,11 @@ class AutoWordEngine:
             
             # Send Ctrl+V combination
             self._send_ctrl_v()
+            return True
             
         except Exception as e:
             self._log(f"Failed to copy/paste image: {e}")
+            return False
 
     def _send_ctrl_v(self):
         inputs = (INPUT * 4)()
@@ -452,7 +541,7 @@ class AutoWordEngine:
         
         user32.SendInput(4, inputs, ctypes.sizeof(INPUT))
 
-    def _match_replacement(self) -> dict | None:
+    def _match_replacement(self, current_app: str) -> dict | None:
         with self._lock:
             if not self._enabled_map:
                 return None
@@ -460,6 +549,12 @@ class AutoWordEngine:
             buf = self._buffer
             for trig in self._triggers_sorted:
                 if buf.endswith(trig):
-                    return self._enabled_map[trig]
+                    rules = self._enabled_map[trig]
+                    for rule in rules:
+                        targets = _normalize_app_targets(rule)
+                        if not targets:
+                            return rule
+                        if current_app and current_app in targets:
+                            return rule
         return None
 

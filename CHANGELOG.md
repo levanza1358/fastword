@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
   - Otomatis mengirim `Ctrl+V` setelah trigger gambar terdeteksi.
 - [15:30] **Logging System**:
   - Menambahkan panel log di GUI bagian bawah untuk memantau aktivitas engine.
-  - Menambahkan callback logging di `AutoWordEngine` untuk debug real-time.
+  - Menambahkan callback logging di `FastWordEngine` untuk debug real-time.
 - [15:15] **GUI Improvement**:
   - Memperbesar ukuran window default menjadi 800x600.
   - Menambahkan scrollbar untuk tabel rules.
@@ -32,4 +32,4 @@ All notable changes to this project will be documented in this file.
 - [14:30] **Initial Release**:
   - Implementasi dasar Global Keyboard Hook menggunakan `ctypes` dan `user32.dll`.
   - GUI dasar menggunakan `tkinter` untuk manajemen rules (Add/Edit/Delete).
-  - Penyimpanan rules otomatis ke `%APPDATA%\AutoWord\rules.json`.
+  - Penyimpanan rules otomatis ke `%APPDATA%\FastWord\rules.json`.

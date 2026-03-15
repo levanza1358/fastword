@@ -24,3 +24,6 @@ Desktop.ini
 # App specific
 *.log
 rules_local.json
+build/
+dist/
+*.spec
