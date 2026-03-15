@@ -10,5 +10,6 @@ python -m PyInstaller `
   --windowed `
   --name FastWord `
   --icon fastword\assets\app.ico `
+  --version-file version_info.txt `
   --add-data "fastword\assets;assets" `
   main.py

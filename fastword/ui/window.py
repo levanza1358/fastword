@@ -50,11 +50,12 @@ from .pages import (
 )
 
 APP_NAME = "FastWord"
+APP_VERSION = "1.7.4"
 APP_MARK = "FW"
 APP_DESKTOP_ID = "FastWord.Desktop"
 APP_LICENSE_TEXT = """FastWord Proprietary License
 
-Copyright (c) 2026 Rizqi Ismanda Nugraha
+Copyright (c) 2026 Developer
 All rights reserved.
 
 1. License Grant
@@ -64,7 +65,7 @@ You may install and use one or more copies of FastWord for personal or internal 
 You may not redistribute, resell, sublicense, lease, modify, reverse engineer, or publish this software without prior written permission from the copyright holder.
 
 3. Ownership
-FastWord, its code, assets, branding, and related materials remain the exclusive property of Rizqi Ismanda Nugraha.
+FastWord, its code, assets, branding, and related materials remain the exclusive property of the copyright holder.
 
 4. Donations
 Donations support development and maintenance of the software. Donations do not transfer ownership, source code rights, or redistribution rights.
@@ -76,13 +77,10 @@ This software is provided "as is" without warranties of any kind, express or imp
 The author is not liable for any claim, damage, data loss, business interruption, or other liability arising from the use of this software.
 
 7. Contact and Permission
-For commercial licensing, redistribution, or modification requests, contact the copyright holder directly.
+For commercial licensing, redistribution, or modification requests, contact the developer directly.
 """
 
-BANK_NAME = "BCA"
-BANK_ACCOUNT_NUMBER = "1710873620"
-BANK_ACCOUNT_NAME = "Rizqi Ismanda Nugraha"
-DEVELOPER_NAME = "Rizqi Ismanda Nugraha"
+DEVELOPER_NAME = "Developer"
 GITHUB_USERNAME = "@levanza1358"
 GITHUB_URL = "https://github.com/levanza1358"
 PAYPAL_URL = "https://paypal.me/rizqiismanda"
@@ -120,9 +118,6 @@ class FastWordWindow(QMainWindow):
         self.editor_rule_index: Optional[int] = None
         self.log_lines: list[str] = []
         self.license_text_value = APP_LICENSE_TEXT
-        self.bank_name = BANK_NAME
-        self.bank_account_number = BANK_ACCOUNT_NUMBER
-        self.bank_account_name = BANK_ACCOUNT_NAME
         self.developer_name = DEVELOPER_NAME
         self.github_username = GITHUB_USERNAME
         self.github_url = GITHUB_URL
@@ -311,12 +306,6 @@ class FastWordWindow(QMainWindow):
 
     def _copy_license_text(self) -> None:
         self._copy_to_clipboard(self.license_text_value, "License text")
-
-    def _copy_bank_account_number(self) -> None:
-        self._copy_to_clipboard(self.bank_account_number, "Bank account number")
-
-    def _copy_bank_account_name(self) -> None:
-        self._copy_to_clipboard(self.bank_account_name, "Bank account name")
 
     def _copy_github_link(self) -> None:
         self._copy_to_clipboard(self.github_url, "GitHub link")
@@ -922,6 +911,7 @@ class FastWordGUI:
     def __init__(self):
         self.app = QApplication.instance() or QApplication(sys.argv)
         self.app.setApplicationName(APP_NAME)
+        self.app.setApplicationVersion(APP_VERSION)
         self.app.setQuitOnLastWindowClosed(True)
         self.app.setStyleSheet(APP_STYLESHEET)
         self.window = FastWordWindow()

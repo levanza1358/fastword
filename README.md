@@ -1,61 +1,93 @@
-# FastWord
+<p align="center">
+  <img src="docs/readme-hero.png" alt="FastWord banner" width="100%">
+</p>
 
-FastWord is a Windows desktop text expansion tool built with Python and PyQt6. It lets you create shortcut-based rules that can inject text, paste an image, optionally press Enter, and restrict execution to specific desktop applications.
+<p align="center">
+  <strong>FastWord</strong> is a Windows desktop text expander for fast replies, image paste, app-targeted rules, Auto Enter, and installer-ready distribution.
+</p>
 
-The project is designed for fast repetitive messaging, canned replies, customer support workflows, and other high-frequency desktop text automation tasks.
+<p align="center">
+  Version 1.7.4 | Windows 10/11 | Python 3.12+ | PyQt6
+</p>
 
-## Highlights
+## Overview
 
-- Global text expansion engine for Windows
-- Per-rule text output
+FastWord is built for repetitive desktop messaging workflows.
+
+It lets you type a trigger such as `/promo`, `/addr`, or `/followup` and instantly replace it with:
+
+- text
+- an image
+- text plus image
+- optional Auto Enter submission
+- app-specific behavior based on executable name
+
+This makes it useful for support replies, admin work, customer chat handling, marketplace operations, and any workflow that depends on repeated desktop text entry.
+
+## What FastWord Can Do
+
+- Global text expansion on Windows
+- Per-rule output text
 - Per-rule image paste support
 - Per-rule Auto Enter
-- Per-rule app targeting by executable name
-- Search and filter for saved rules
+- Per-rule app targeting such as `discord.exe` or `chrome.exe`
+- Live rule search and filtering
 - Inline editor with image preview
 - Activity log with copy and clear actions
 - Settings page for runtime behavior
-- Optional system tray integration
-- Optional Windows startup integration
+- Optional system tray support
+- Optional minimize-to-tray behavior
+- Optional Start with Windows
 - Optional engine auto-start when the app opens
 - Backup export and import
 - Built-in License and Donate pages
+- Standalone `.exe` build
+- Windows installer build
 
-## Core Features
+## Rule Model
 
-### Rule engine
+Each rule can contain:
 
-Each rule can define:
+- `Trigger`
+- `Output Text`
+- `Image Path`
+- `Enabled`
+- `Auto Enter`
+- `Target Apps`
 
-- `Trigger`: the typed shortcut that activates the rule
-- `Output Text`: the text that will be inserted
-- `Image Path`: an optional image file to paste
-- `Rule Enabled`: whether the rule is active
-- `Auto Enter`: whether the rule submits immediately after sending content
-- `Target Apps`: optional comma-separated executable names such as `discord.exe, chrome.exe`
-
-Supported behavior:
+Examples:
 
 - Text only
 - Image only
-- Text plus image
-- Global rules
-- App-specific rules
+- Text + image
+- Global rule
+- App-specific rule
 
-Duplicate triggers are blocked when their scope overlaps.
+`Target Apps` should contain executable names only, for example:
 
-### Desktop UI
+- `discord.exe`
+- `chrome.exe`
+- `whatsapp.exe`
+- `discord.exe, chrome.exe`
 
-The desktop app includes:
+Behavior:
 
-- `Home` page for quick actions and summary stats
-- `Word Editor` page for search, filtering, editing, preview, and CRUD
-- `Activity Log` page for runtime events
-- `Settings` page for global configuration
-- `License` page for ownership and usage terms
-- `Donate` page for support links and bank transfer info
+- If `Target Apps` is empty, the rule is global
+- If `Target Apps` is filled, the rule only works in those apps
+- Duplicate triggers are blocked when their app scope overlaps
 
-### Settings
+## Desktop Pages
+
+FastWord includes:
+
+- `Home` for quick actions and high-level stats
+- `Word Editor` for rule creation, editing, search, filter, and preview
+- `Activity Log` for runtime events
+- `Settings` for startup, tray, delay, and automation behavior
+- `License` for software terms
+- `Donate` for support links
+
+## Settings
 
 The current settings include:
 
@@ -66,10 +98,19 @@ The current settings include:
 - Auto start engine when app opens
 - Global delay before Enter
 
-Note:
+Important behavior:
 
-- Closing the window exits the application
-- Only minimizing can route the app to the tray when tray support is enabled
+- Closing the window exits the app
+- Only minimizing can send the app to the tray when tray support is enabled
+
+## Quick Start
+
+1. Install Python dependencies.
+2. Launch FastWord.
+3. Create one or more rules in `Word Editor`.
+4. Start the engine.
+5. Type a trigger in a supported Windows application.
+6. FastWord replaces the trigger with the configured content.
 
 ## Requirements
 
@@ -102,35 +143,19 @@ python main.py
 powershell -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-The packaged executable is created at:
+Output:
 
 `dist\FastWord.exe`
 
-## How FastWord Works
+## Build The Installer
 
-1. Launch the application.
-2. Create one or more rules in `Word Editor`.
-3. Start the engine.
-4. Type a trigger in a supported target application.
-5. FastWord replaces the trigger with the configured output.
-6. If the rule includes an image, FastWord pastes it.
-7. If Auto Enter is enabled, FastWord submits the content after the configured delay.
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build-installer.ps1
+```
 
-## Rule Targeting
+Output:
 
-`Target Apps` accepts executable names only.
-
-Examples:
-
-- `discord.exe`
-- `chrome.exe`
-- `whatsapp.exe`
-- `discord.exe, chrome.exe`
-
-Behavior:
-
-- If `Target Apps` is empty, the rule is global
-- If `Target Apps` is filled, the rule only works in those applications
+`dist\installer\FastWord-Setup.exe`
 
 ## Storage
 
@@ -140,7 +165,7 @@ Application data is stored in:
 
 Backups created from the app are stored in the same folder.
 
-Legacy data from the previous app name is migrated automatically to the `FastWord` folder when available.
+Legacy data from the previous app name is migrated automatically when available.
 
 ## Backup And Restore
 
@@ -150,35 +175,28 @@ FastWord supports:
 - Import backup
 - Automatic pre-import backup creation
 
-This makes it easier to move rules between machines or restore an earlier configuration.
+This makes it easier to move rules between devices or recover an earlier setup.
 
 ## Notes And Limitations
 
 - FastWord is Windows-only.
-- Some target applications handle clipboard and Enter submission differently.
-- Image paste support depends on the target application accepting pasted image content.
-- Auto Enter timing may need adjustment depending on the target app and the content being sent.
+- Some target apps handle clipboard and Enter submission differently.
+- Image paste support depends on whether the target app accepts pasted image content.
+- Auto Enter timing may need adjustment depending on the target app and payload.
 - For app targeting, always use executable names, not window titles.
 
 ## Donation
 
-The desktop app includes a `Donate` page with:
+The app includes a `Donate` page with:
 
-- PayPal link
-- Bank transfer details
+- PayPal support link
 - Developer GitHub link
-
-Current bank transfer details in the app:
-
-- Bank: `BCA`
-- Account Number: `1710873620`
-- Account Name: `Rizqi Ismanda Nugraha`
 
 ## License
 
-This project is distributed under the proprietary license in [LICENSE](LICENSE).
+FastWord is distributed under the proprietary license in [LICENSE](LICENSE).
 
 ## Developer
 
-- Developer: `Rizqi Ismanda Nugraha`
+- Developer: `Developer`
 - GitHub: `https://github.com/levanza1358`
