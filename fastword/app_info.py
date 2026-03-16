@@ -1,0 +1,37 @@
+APP_NAME = "FastWord"
+APP_VERSION = "1.7.4"
+APP_MARK = "FW"
+APP_DESKTOP_ID = "FastWord.Desktop"
+
+APP_LICENSE_TEXT = """FastWord Proprietary License
+
+Copyright (c) 2026 Developer
+All rights reserved.
+
+1. License Grant
+You may install and use one or more copies of FastWord for personal or internal business use.
+
+2. Restrictions
+You may not redistribute, resell, sublicense, lease, modify, reverse engineer, or publish this software without prior written permission from the copyright holder.
+
+3. Ownership
+FastWord, its code, assets, branding, and related materials remain the exclusive property of the copyright holder.
+
+4. Donations
+Donations support development and maintenance of the software. Donations do not transfer ownership, source code rights, or redistribution rights.
+
+5. Warranty Disclaimer
+This software is provided "as is" without warranties of any kind, express or implied.
+
+6. Limitation of Liability
+The author is not liable for any claim, damage, data loss, business interruption, or other liability arising from the use of this software.
+
+7. Contact and Permission
+For commercial licensing, redistribution, or modification requests, contact the developer directly.
+"""
+
+DEVELOPER_NAME = "Developer"
+GITHUB_USERNAME = "@levanza1358"
+GITHUB_URL = "https://github.com/levanza1358"
+PAYPAL_URL = "https://paypal.me/rizqiismanda"
+PAYPAL_DISPLAY_TEXT = "Send support directly to PayPal.me/rizqiismanda."

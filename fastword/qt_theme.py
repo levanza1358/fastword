@@ -45,6 +45,11 @@ QFrame#statCard {
     border: 1px solid #1b2940;
     border-radius: 12px;
 }
+QFrame#dangerCard {
+    background: #21141b;
+    border: 1px solid #6f3945;
+    border-radius: 12px;
+}
 QLabel#heroTitle {
     font-size: 18pt;
     font-weight: 700;
@@ -105,6 +110,14 @@ QLabel#fieldLabel {
     font-size: 9.5pt;
     font-weight: 600;
 }
+QLabel#dangerTitle {
+    color: #ffc8cb;
+    font-size: 10.5pt;
+    font-weight: 700;
+}
+QLabel#dangerText {
+    color: #e4b6bc;
+}
 QLabel#pathText {
     color: #8fa1bd;
     font-size: 8.8pt;
@@ -137,6 +150,11 @@ QPushButton#dangerButton {
 }
 QPushButton#dangerButton:hover {
     background: #7d3140;
+}
+QPushButton#dangerButton:disabled {
+    background: #281820;
+    color: #9a7f86;
+    border: 1px solid #50333b;
 }
 QPushButton#navButton {
     text-align: left;

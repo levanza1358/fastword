@@ -24,6 +24,20 @@ It lets you type a trigger such as `/promo`, `/addr`, or `/followup` and instant
 
 This makes it useful for support replies, admin work, customer chat handling, marketplace operations, and any workflow that depends on repeated desktop text entry.
 
+## Screenshots
+
+A quick look at the main FastWord desktop pages.
+
+| Home | Word Editor |
+| --- | --- |
+| <img src="assets/ss1.PNG" alt="FastWord home page" width="100%"> | <img src="assets/ss2.PNG" alt="FastWord word editor page" width="100%"> |
+| Clean dashboard with engine controls and shortcuts. | Rule search, inline editing, previews, and app targeting. |
+
+| Settings | Donate |
+| --- | --- |
+| <img src="assets/ss3.PNG" alt="FastWord settings page" width="100%"> | <img src="assets/ss4.PNG" alt="FastWord donate page" width="100%"> |
+| Startup, tray, delay, and automation preferences. | Built-in support page with PayPal and developer links. |
+
 ## What FastWord Can Do
 
 - Global text expansion on Windows
